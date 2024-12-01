@@ -6,48 +6,39 @@ if [ ! -f "./philo" ]; then
     exit 1
 fi
 
-# Teste 1: Vazamento de memória
-echo "🔍 Testando vazamento de memória:"
-echo "Teste: ./philo 4 800 200 200"
-valgrind --leak-check=full --error-exitcode=1 ./philo 4 800 200 200 > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    echo "❌ Vazamento de memória detectado!"
-else
-    echo "✅ Sem vazamentos de memória!"
-fi
-# Teste 2: Temporização de morte
-echo "🔍 Testando temporização de morte:"
-start_time=$(date +%s%3N)
-./philo 4 310 200 200 > output.log &
-#sleep 2
-end_time=$(date +%s%3N)
-elapsed=$((end_time - start_time))
-if [ $elapsed -le 810 ]; then
-    echo "✅ Tempo de morte dentro do limite (<= 10ms)!"
-else
-    echo "❌ Tempo de morte excedeu o limite!"
-fi
-> output.log
-# Teste 3: Verificar consumo
-echo "🔍 Testando se cada filósofo comeu o suficiente:"
-echo "5 800 200 200 "
-n_philo=(5)
-time_die=(810)
-time_eat=(200)
-time_sleep=(200)
-n_eat=(10)
-./philo $n_philo $time_die $time_eat $time_sleep $n_eat > output.log
-for i in $(seq 1 5); do
-    count=$(grep -c "$i is eating" output.log)
-    if [ $count -lt $n_eat ]; then
-        echo "❌ Filósofo $i não comeu $n_eat vezes!"
+#Testando cenários onde um filósofo deve morrer
+echo "🔍 Testando cenários onde um filósofo deve morrer..."
+
+test_cases=(
+    "2 310 200 100"
+    "3 400 200 150"
+    "4 300 150 150"
+    "5 500 200 300"
+)
+
+for case in "${test_cases[@]}"; do
+    echo "🧪 Testando caso: ./philo $case"
+    ./philo $case > output.log
+
+    death_message_count=$(grep -c "died" output.log)
+    post_death_messages=$(grep -A1 "died" output.log | tail -n +2)
+
+    echo "Resultado:"
+    if [ "$death_message_count" -eq 1 ]; then
+        echo "✅ Apenas uma mensagem de morte encontrada."
     else
-        echo "✅ Filósofo $i comeu pelo menos $n_eat vezes!"
+        echo "❌ Número incorreto de mensagens de morte ($death_message_count encontradas)."
     fi
+
+    if [ -z "$post_death_messages" ]; then
+        echo "✅ Nenhuma mensagem após a morte."
+    else
+        echo "❌ Mensagens encontradas após a morte:"
+        echo "$post_death_messages"
+    fi
+    echo ""
 done
-> output.log
-# Teste 4: Diversos parâmetros
-echo "🔍 Testando diversos parâmetros..."
-./philo 1 810 200 200 10 > /dev/null && echo "✅ 1 Filósofo testado com sucesso!"
-./philo 2 810 200 200 10 > /dev/null && echo "✅ 2 Filósofos testados com sucesso!"
-./philo 5 810 200 200 10 > /dev/null && echo "✅ 5 Filósofos testados com sucesso!"
+
+echo "✔️ Testes concluídos!"
+
+
