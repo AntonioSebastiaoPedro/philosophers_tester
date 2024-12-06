@@ -6,7 +6,7 @@
 #    By: ansebast <ansebast@student.42luanda.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/01 13:23:47 by ansebast          #+#    #+#              #
-#    Updated: 2024/12/06 08:59:59 by ansebast         ###   ########.fr        #
+#    Updated: 2024/12/06 09:02:00 by ansebast         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -428,3 +428,8 @@ if [ "$1" = "-a" ] || [ "$1" = "-s" ]; then
 	rm -f output.log
 	echo -e "\n"
 fi
+
+echo -e "✅✅✅✅✅✅✅ Testes concluídos!✅✅✅✅✅✅✅✅✅✅✅\n"
+
+echo -e "O projecto foi útil? Deixe sua estrela no$BOLT GitHub!$RESET ⭐🥺"
+echo -e "Aqui está do link repositório:$B$BOLT https://github.com/AntonioSebastiaoPedro/philosophers_tester$RESET"
