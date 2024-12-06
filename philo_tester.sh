@@ -6,7 +6,7 @@
 #    By: ansebast <ansebast@student.42luanda.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/01 13:23:47 by ansebast          #+#    #+#              #
-#    Updated: 2024/12/06 08:51:17 by ansebast         ###   ########.fr        #
+#    Updated: 2024/12/06 08:55:07 by ansebast         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -183,5 +183,66 @@ if [ "$1" = "-a" ] || [ "$1" = "-d" ]; then
 		echo -e "\n"
 	done
 	rm -f output.log valgrind.log drd.log
+	echo -e "\n"
+fi
+
+#===================Testes de vazamento de memória
+if [ "$1" = "-a" ] || [ "$1" = "-l" ]; then
+	echo -e "$BOLT$C=====================================================$RESET"
+	echo "🔍 A Iniciar testes de vazamento de memória..."
+	echo -e "$BOLT$C=====================================================$RESET\n"
+	test_cases=(
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"0 0 0 0"
+		"0 0 0 0 0"
+		"0 200 200 200"
+		""
+		"5 0 200 200"
+		"5 800 0 200"
+		"5 800 200 0"
+		"-5 800 200 200"
+		" 5 -800 200 200"
+		"5 800 200 200 0"
+		"10 200 200 200"
+		"3 600 300 300"
+		"100 50 25 25"
+		"179 800 200 200"
+		"asd asd ad asd"
+		"1 sad asd asd"
+		"5 1000 200 200 abc"
+		"1 800 200 200 999999999999999999999999999999999999"
+		"2 999999999999999999999999999999999999 999999999999999999999999999999999999 999999999999999999999999999999999999 999999999999999999999999999999999999"
+		"2 800 200 200"
+		"1 800 200 200"
+		"200 800 200 200"
+		"5 5000 2000 2000"
+		"5 200 100 100"
+		"5 800 200 200 10"
+		"5 800 200 200 9223372036854775809"
+		"1 -92233720368547758099 200 200 10"
+		"5 1 1 1"
+		"-1 800 200 200"
+		"0 800 200 200"
+		"200 800 200 200"
+	)
+
+	for case in "${test_cases[@]}"; do
+		echo "🧪 Caso de teste: ./philo $case"
+		timeout 60 valgrind --leak-check=full ./philo $case >leaks.log 2>&1
+		leaks_count=$(grep -c "lost" leaks.log)
+		if [ $leaks_count -ne 0 ]; then
+			echo "❌ Vazamento de memória detectado!"
+		else
+			echo -e "✅ Sem vazamentos de memória!\n"
+		fi
+	done
+	rm -f leaks.log
 	echo -e "\n"
 fi
