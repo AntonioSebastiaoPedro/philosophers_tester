@@ -6,7 +6,7 @@
 #    By: ansebast <ansebast@student.42luanda.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/01 13:23:47 by ansebast          #+#    #+#              #
-#    Updated: 2024/12/06 08:56:59 by ansebast         ###   ########.fr        #
+#    Updated: 2024/12/06 08:58:36 by ansebast         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -298,5 +298,73 @@ if [ "$1" = "-a" ] || [ "$1" = "-c" ]; then
 			echo -e "✅ Nenhum Filósofo morreu 😇\n"
 		fi
 	done
+	echo -e "\n"
+fi
+
+##===================Validação do tempo de morte
+if [ "$1" = "-a" ] || [ "$1" = "-t" ]; then
+	echo -e "$BOLT$C=====================================================$RESET"
+	echo -e "⏱️ A Verificar tempo de emissão das mensagens de morte"
+	echo -e "$BOLT$C=====================================================$RESET\n"
+
+	test_cases=(
+		"$(shuf -i 3-79 -n 1) 800 6000 200 1000"
+		"$(shuf -i 3-79 -n 1) 777 523 257"
+		"$(shuf -i 3-79 -n 1) 600 2000 1000 1000"
+		"$(shuf -i 3-79 -n 1) 800 4000 100 1000"
+		"2 100 1000 1000 1000"
+		"1 800 100 100 1000"
+		"2 310 2000 1000 1000"
+		"$(shuf -i 3-79 -n 1) 60 200 200 1000"
+		"$(shuf -i 3-79 -n 1) 800 600 200 1000"
+		"$(shuf -i 3-79 -n 1) 777 523 257"
+		"3 600 300 300 1000"
+		"$(shuf -i 3-79 -n 1) 800 400 400 1000"
+		"2 100 100 100 1000"
+		"1 800 100 100 1000"
+		"4 310 200 200"
+		"2 310 2000 100 1000"
+		"3 400 2000 150"
+		"4 300 3000 150 1000"
+		"5 500 2000 300 1000"
+		"$(shuf -i 3-79 -n 1) 200 200 200"
+		"100 120 65 65"
+		"179 800 400 400"
+		"$(shuf -i 3-179 -n 1) 1000 1000 1000 100"
+		"4 310 200 200"
+		"5 410 200 200"
+		"3 600 300 300"
+		"7 401 200 200"
+		"4 310 200 100"
+	)
+
+	for case in "${test_cases[@]}"; do
+		echo "🧪 A Testar caso: ./philo $case"
+		timeout 5 stdbuf -oL ./philo $case >temp_output.log 2>&1
+
+		death_message=$(grep "died" temp_output.log)
+		if [ -z "$death_message" ]; then
+			echo "❌ Tempo esgotado. Nenhum filósofo morreu neste cenário."
+		else
+			echo "📜 Log de morte: $death_message"
+			death_time=$(echo "$death_message" | awk '{print $1}')
+			philosopher_id=$(echo "$death_message" | awk '{print $2}')
+			last_eat_time=$(awk '/$philosopher_id .* is eating/ {line=$0} END {print line}' temp_output.log)
+
+			if [ -z "$last_eat_time" ]; then
+				last_eat_time=0
+			fi
+			time_since_last_eat=$((death_time - last_eat_time))
+			excess_time=$((time_since_last_eat - $(echo $case | awk '{print $2}')))
+
+			if [ "$excess_time" -gt 10 ]; then
+				echo "❌ Tempo de emissão da mensagem excedeu 10ms: Excesso de $excess_time ms."
+			else
+				echo "✅ Mensagem emitida dentro do limite de tempo permitido."
+			fi
+		fi
+		echo -e "\n"
+	done
+	rm -f temp_output.log
 	echo -e "\n"
 fi
