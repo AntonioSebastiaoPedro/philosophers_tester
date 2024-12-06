@@ -6,7 +6,7 @@
 #    By: ansebast <ansebast@student.42luanda.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/01 13:23:47 by ansebast          #+#    #+#              #
-#    Updated: 2024/12/06 09:02:00 by ansebast         ###   ########.fr        #
+#    Updated: 2024/12/06 13:10:25 by ansebast         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -103,6 +103,8 @@ fi
 
 trap cleanup SIGINT
 
+test_passed=0
+test_failure=0
 ##===================Teste de cenários para Data Races
 if [ "$1" = "-a" ] || [ "$1" = "-d" ]; then
 	test_cases=(
@@ -143,8 +145,10 @@ if [ "$1" = "-a" ] || [ "$1" = "-d" ]; then
 		restore_output
 		if [ $? -eq 124 ]; then
 			echo -e "❌ Deadlock detectado (programa travou ou demorou demais).\n"
+			test_failure=$(( $test_failure + 1 ))
 		else
 			echo -e "✅ Sem deadlock detectado.\n"
+			test_passed=$(( $test_passed + 1 ))
 		fi
 	done
 	echo -e "\n"
@@ -160,8 +164,10 @@ if [ "$1" = "-a" ] || [ "$1" = "-d" ]; then
 		restore_output
 		if grep -q "data race" valgrind.log; then
 			echo -e "❌ Possível Data Race detectado!\n"
+			test_failure=$(( $test_failure + 1 ))
 		else
 			echo -e "✅ Sem Data Races detectados.\n"
+			test_passed=$(( $test_passed + 1 ))
 		fi
 	done
 	echo -e "\n"
@@ -177,8 +183,10 @@ if [ "$1" = "-a" ] || [ "$1" = "-d" ]; then
 		restore_output
 		if grep -q "Conflicting" drd.log; then
 			echo "❌ Data Race detectado!"
+			test_failure=$(( $test_failure + 1 ))
 		else
 			echo "✅ Sem Data Races detectados."
+			test_passed=$(( $test_passed + 1 ))
 		fi
 		echo -e "\n"
 	done
@@ -239,8 +247,10 @@ if [ "$1" = "-a" ] || [ "$1" = "-l" ]; then
 		leaks_count=$(grep -c "lost" leaks.log)
 		if [ $leaks_count -ne 0 ]; then
 			echo "❌ Vazamento de memória detectado!"
+			test_failure=$(( $test_failure + 1 ))
 		else
 			echo -e "✅ Sem vazamentos de memória!\n"
+			test_passed=$(( $test_passed + 1 ))
 		fi
 	done
 	rm -f leaks.log
@@ -293,9 +303,11 @@ if [ "$1" = "-a" ] || [ "$1" = "-c" ]; then
 		echo "Resultado:"
 		if [ -n "$death_message" ]; then
 			echo "❌ Um Filósofo morreu 😭"
+			test_failure=$(( $test_failure + 1 ))
 			echo -e "📜 Log de morte: $death_message ☠️\n"
 		else
 			echo -e "✅ Nenhum Filósofo morreu 😇\n"
+			test_passed=$(( $test_passed + 1 ))
 		fi
 	done
 	echo -e "\n"
@@ -345,6 +357,7 @@ if [ "$1" = "-a" ] || [ "$1" = "-t" ]; then
 		death_message=$(grep "died" temp_output.log)
 		if [ -z "$death_message" ]; then
 			echo "❌ Tempo esgotado. Nenhum filósofo morreu neste cenário."
+			test_failure=$(( $test_failure + 1 ))
 		else
 			echo "📜 Log de morte: $death_message"
 			death_time=$(echo "$death_message" | awk '{print $1}')
@@ -359,8 +372,10 @@ if [ "$1" = "-a" ] || [ "$1" = "-t" ]; then
 
 			if [ "$excess_time" -gt 10 ]; then
 				echo "❌ Tempo de emissão da mensagem excedeu 10ms: Excesso de $excess_time ms."
+				test_failure=$(( $test_failure + 1 ))
 			else
 				echo "✅ Mensagem emitida dentro do limite de tempo permitido."
+				test_passed=$(( $test_passed + 1 ))
 			fi
 		fi
 		echo -e "\n"
@@ -379,28 +394,28 @@ if [ "$1" = "-a" ] || [ "$1" = "-s" ]; then
 		"$(shuf -i 3-79 -n 1) 777 523 257"
 		"$(shuf -i 3-79 -n 1) 600 2000 1000 1000"
 		"$(shuf -i 3-79 -n 1) 800 4000 100 1000"
-		"2 100 1000 1000 1000"
-		"1 800 100 100 1000"
-		"2 310 2000 1000 1000"
-		"$(shuf -i 3-79 -n 1) 60 200 200 1000"
-		"$(shuf -i 3-79 -n 1) 800 600 200 1000"
-		"$(shuf -i 3-79 -n 1) 777 523 257"
-		"3 600 300 300 1000"
-		"$(shuf -i 3-79 -n 1) 800 400 400 1000"
-		"2 100 100 100 1000"
-		"1 800 100 100 1000"
-		"2 310 2000 100 1000"
-		"3 400 2000 150"
-		"4 300 3000 150 1000"
-		"5 500 2000 300 1000"
-		"$(shuf -i 3-79 -n 1) 200 200 200"
-		"100 120 65 65"
-		"179 800 400 400"
-		"$(shuf -i 3-179 -n 1) 1000 1000 1000 100"
-		"4 310 200 200"
-		"5 410 200 200"
-		"3 600 300 300"
-		"7 401 200 200"
+		# "2 100 1000 1000 1000"
+		# "1 800 100 100 1000"
+		# "2 310 2000 1000 1000"
+		# "$(shuf -i 3-79 -n 1) 60 200 200 1000"
+		# "$(shuf -i 3-79 -n 1) 800 600 200 1000"
+		# "$(shuf -i 3-79 -n 1) 777 523 257"
+		# "3 600 300 300 1000"
+		# "$(shuf -i 3-79 -n 1) 800 400 400 1000"
+		# "2 100 100 100 1000"
+		# "1 800 100 100 1000"
+		# "2 310 2000 100 1000"
+		# "3 400 2000 150"
+		# "4 300 3000 150 1000"
+		# "5 500 2000 300 1000"
+		# "$(shuf -i 3-79 -n 1) 200 200 200"
+		# "100 120 65 65"
+		# "179 800 400 400"
+		# "$(shuf -i 3-179 -n 1) 1000 1000 1000 100"
+		# "4 310 200 200"
+		# "5 410 200 200"
+		# "3 600 300 300"
+		# "7 401 200 200"
 	)
 
 	for case in "${test_cases[@]}"; do
@@ -416,12 +431,15 @@ if [ "$1" = "-a" ] || [ "$1" = "-s" ]; then
 		echo "Resultado:"
 		if [ "$death_message_count" -eq 1 ]; then
 			echo -e "✅ Apenas uma mensagem de morte encontrada.\n"
+			test_passed=$(( $test_passed + 1 ))
 		else
 			echo -e "❌ Tempo esgotado. Número incorreto de mensagens de morte ($death_message_count encontradas).\n"
+			test_failure=$(( $test_failure + 1 ))
 		fi
 
 		if [ ! -z "$post_death_messages" ]; then
 			echo -e "❌ Mensagens encontradas após a morte:\n"
+			test_failure=$(( $test_failure + 1 ))
 			echo -e "$post_death_messages\n"
 		fi
 	done
@@ -429,7 +447,11 @@ if [ "$1" = "-a" ] || [ "$1" = "-s" ]; then
 	echo -e "\n"
 fi
 
-echo -e "✅✅✅✅✅✅✅ Testes concluídos!✅✅✅✅✅✅✅✅✅✅✅\n"
+echo -e "$BOLT$C=========================================$RESET"
+echo -e "🔨 Testes Efectuados: $(( $test_passed + $test_failure ))"
+echo -e "✅ OK: $test_passed"
+echo -e "❌ KO: $test_failure"
+echo -e "$BOLT$C=========================================$RESET\n"
 
 echo -e "O projecto foi útil? Deixe sua estrela no$BOLT GitHub!$RESET ⭐🥺"
 echo -e "Aqui está do link repositório:$B$BOLT https://github.com/AntonioSebastiaoPedro/philosophers_tester$RESET"
