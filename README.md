@@ -29,7 +29,7 @@ Before running the script, ensure it has execution permissions. Use the followin
 
 ```bash
 chmod +x philo_tester.sh
-./philo_tester.sh [option] [parameters]
+bash philo_tester.sh [option] [parameters]
 ```
 
 ### Available Options
@@ -47,22 +47,22 @@ chmod +x philo_tester.sh
 
 1. Run all scenarios:
    ```bash
-   ./philo_tester.sh -a
+   bash philo_tester.sh -a
    ```
 
 2. Test for deadlocks and data races:
    ```bash
-   ./philo_tester.sh -d
+   bash philo_tester.sh -d
    ```
 
 3. Test scenarios where no philosopher should die for 60 seconds:
    ```bash
-   ./philo_tester.sh -c 60
+   bash philo_tester.sh -c 60
    ```
 
 4. Check for memory leaks:
    ```bash
-   ./philo_tester.sh -l
+   bash philo_tester.sh -l
    ```
 
 ## Results and Logs

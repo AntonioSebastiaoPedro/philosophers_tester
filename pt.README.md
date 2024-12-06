@@ -29,7 +29,7 @@ Para rodar o script, certifique-se de que ele tenha permissões de execução. E
 
 ```bash
 chmod +x philo_tester.sh
-./philo_tester.sh [opção] [parâmetros]
+bash philo_tester.sh [opção] [parâmetros]
 ```
 
 ### Opções Disponíveis
@@ -47,22 +47,22 @@ chmod +x philo_tester.sh
 
 1. Testar todos os cenários:
    ```bash
-   ./philo_tester.sh -a
+   bash philo_tester.sh -a
    ```
 
 2. Verificar deadlocks e data races:
    ```bash
-   ./philo_tester.sh -d
+   bash philo_tester.sh -d
    ```
 
 3. Testar cenários onde nenhum filósofo deve morrer por 60 segundos:
    ```bash
-   ./philo_tester.sh -c 60
+   bash philo_tester.sh -c 60
    ```
 
 4. Verificar vazamentos de memória:
    ```bash
-   ./philo_tester.sh -l
+   bash philo_tester.sh -l
    ```
 
 ## Resultados e Logs
