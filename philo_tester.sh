@@ -6,7 +6,7 @@
 #    By: ansebast <ansebast@student.42luanda.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/01 13:23:47 by ansebast          #+#    #+#              #
-#    Updated: 2024/12/06 08:58:36 by ansebast         ###   ########.fr        #
+#    Updated: 2024/12/06 08:59:59 by ansebast         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -366,5 +366,65 @@ if [ "$1" = "-a" ] || [ "$1" = "-t" ]; then
 		echo -e "\n"
 	done
 	rm -f temp_output.log
+	echo -e "\n"
+fi
+
+##===================Testes de cenários onde um filósofo deve morrer
+if [ "$1" = "-a" ] || [ "$1" = "-s" ]; then
+	echo -e "$BOLT$C=====================================================$RESET"
+	echo "🔍 A Testar cenários onde um filósofo deve morrer..."
+	echo -e "$BOLT$C=====================================================$RESET\n"
+	test_cases=(
+		"$(shuf -i 3-79 -n 1) 800 6000 200 1000"
+		"$(shuf -i 3-79 -n 1) 777 523 257"
+		"$(shuf -i 3-79 -n 1) 600 2000 1000 1000"
+		"$(shuf -i 3-79 -n 1) 800 4000 100 1000"
+		"2 100 1000 1000 1000"
+		"1 800 100 100 1000"
+		"2 310 2000 1000 1000"
+		"$(shuf -i 3-79 -n 1) 60 200 200 1000"
+		"$(shuf -i 3-79 -n 1) 800 600 200 1000"
+		"$(shuf -i 3-79 -n 1) 777 523 257"
+		"3 600 300 300 1000"
+		"$(shuf -i 3-79 -n 1) 800 400 400 1000"
+		"2 100 100 100 1000"
+		"1 800 100 100 1000"
+		"2 310 2000 100 1000"
+		"3 400 2000 150"
+		"4 300 3000 150 1000"
+		"5 500 2000 300 1000"
+		"$(shuf -i 3-79 -n 1) 200 200 200"
+		"100 120 65 65"
+		"179 800 400 400"
+		"$(shuf -i 3-179 -n 1) 1000 1000 1000 100"
+		"4 310 200 200"
+		"5 410 200 200"
+		"3 600 300 300"
+		"7 401 200 200"
+	)
+
+	for case in "${test_cases[@]}"; do
+		echo "🧪 Caso de teste: ./philo $case"
+		echo >output.log
+		redirect_output "output.log"
+		timeout 5 stdbuf -oL ./philo $case
+		restore_output
+
+		death_message_count=$(grep -c "died" output.log)
+		post_death_messages=$(grep -A1 "died" output.log | tail -n +2)
+
+		echo "Resultado:"
+		if [ "$death_message_count" -eq 1 ]; then
+			echo -e "✅ Apenas uma mensagem de morte encontrada.\n"
+		else
+			echo -e "❌ Tempo esgotado. Número incorreto de mensagens de morte ($death_message_count encontradas).\n"
+		fi
+
+		if [ ! -z "$post_death_messages" ]; then
+			echo -e "❌ Mensagens encontradas após a morte:\n"
+			echo -e "$post_death_messages\n"
+		fi
+	done
+	rm -f output.log
 	echo -e "\n"
 fi
