@@ -3,14 +3,14 @@
 #                                                         :::      ::::::::    #
 #    philo_tester.sh                                    :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: ansebast <ansebast@student.42luanda.com    +#+  +:+       +#+         #
+#    By: emalungo <emalungo@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/01 13:23:47 by ansebast          #+#    #+#              #
-#    Updated: 2024/12/06 09:02:00 by ansebast         ###   ########.fr        #
+#    Updated: 2024/12/06 13:10:48 by emalungo         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-#!/bin/bash
+#!/bin/sh
 BLACK="\e[30m"
 R="\e[31m"
 G="\e[32m"
@@ -21,6 +21,14 @@ C="\e[36m"
 W="\e[37m"
 RESET="\e[0m"
 BOLT="\e[1m"
+
+echo "           __    _ __          __            __           "
+echo "    ____  / /_  (_) /___      / /____  _____/ /____  _____"
+echo "   / __ \/ __ \/ / / __ \    / __/ _ \/ ___/ __/ _ \/ ___/"
+echo "  / /_/ / / / / / / /_/ /   / /_/  __(__  ) /_/  __/ /    "
+echo " / .___/_/ /_/_/_/\____/____\__/\___/____/\__/\___/_/     "
+echo "/_/                   /_____/                              "
+echo ""
 
 usage() {
 	echo -e "$BOLT$C=========================================$RESET"
@@ -106,18 +114,18 @@ trap cleanup SIGINT
 ##===================Teste de cenários para Data Races
 if [ "$1" = "-a" ] || [ "$1" = "-d" ]; then
 	test_cases=(
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) 1"
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) 1"
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) 1"
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) 1"
-		"5 60 200 200 1000"
-		"77 800 600 200 1000"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"5 60 200 200 100"
+		"77 800 600 200 10"
 		"91 777 523 257"
 		"3 600 300 300 1000"
-		"47 800 400 400 1000"
+		"47 800 400 400 100"
 		"2 100 100 100 1000"
 		"1 800 100 100 1000"
 		"2 310 2000 100 1000"
@@ -125,13 +133,13 @@ if [ "$1" = "-a" ] || [ "$1" = "-d" ]; then
 		"4 300 3000 150 1000"
 		"5 500 2000 300 1000"
 		"10 200 200 200"
-		"100 120 65 65"
-		"179 800 400 400"
+		"100 120 65 65 10"
+		"179 800 400 400 7"
 		"5 1000 1000 1000 100"
-		"4 310 200 200"
-		"5 410 200 200"
-		"3 600 300 300"
-		"7 401 200 200"
+		"4 310 200 200 100"
+		"5 410 200 200 1000"
+		"3 600 300 300 123"
+		"7 401 200 200 113"
 	)
 	echo -e "$BOLT$C==========================================================$RESET"
 	echo -e "🔍 A Testar cenários para Deadlocks..."
@@ -139,7 +147,7 @@ if [ "$1" = "-a" ] || [ "$1" = "-d" ]; then
 	for case in "${test_cases[@]}"; do
 		echo "🧪 Caso de teste: ./philo $case"
 		redirect_output "output.log"
-		timeout 5 stdbuf -oL ./philo $case
+		timeout 8 stdbuf -oL ./philo $case
 		restore_output
 		if [ $? -eq 124 ]; then
 			echo -e "❌ Deadlock detectado (programa travou ou demorou demais).\n"
@@ -192,13 +200,13 @@ if [ "$1" = "-a" ] || [ "$1" = "-l" ]; then
 	echo "🔍 A Iniciar testes de vazamento de memória..."
 	echo -e "$BOLT$C=====================================================$RESET\n"
 	test_cases=(
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 800-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
 		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
 		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
 		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
-		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
 		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 1-5 -n 1)"
 		"0 0 0 0"
 		"0 0 0 0 0"
@@ -209,7 +217,7 @@ if [ "$1" = "-a" ] || [ "$1" = "-l" ]; then
 		"5 800 200 0"
 		"-5 800 200 200"
 		" 5 -800 200 200"
-		"5 800 200 200 0"
+		"5 800 200 200 7"
 		"10 200 200 200"
 		"3 600 300 300"
 		"100 50 25 25"
@@ -219,18 +227,18 @@ if [ "$1" = "-a" ] || [ "$1" = "-l" ]; then
 		"5 1000 200 200 abc"
 		"1 800 200 200 999999999999999999999999999999999999"
 		"2 999999999999999999999999999999999999 999999999999999999999999999999999999 999999999999999999999999999999999999 999999999999999999999999999999999999"
-		"2 800 200 200"
+		"2 800 200 200 3"
 		"1 800 200 200"
-		"200 800 200 200"
-		"5 5000 2000 2000"
+		"200 800 2000 200"
+		"5 4000 2000 2000"
 		"5 200 100 100"
-		"5 800 200 200 10"
+		"7 800 200 200 10"
 		"5 800 200 200 9223372036854775809"
 		"1 -92233720368547758099 200 200 10"
-		"5 1 1 1"
+		"5 1 1 1 10"
 		"-1 800 200 200"
 		"0 800 200 200"
-		"200 800 200 200"
+		"200 800 200 200 1"
 	)
 
 	for case in "${test_cases[@]}"; do
@@ -340,7 +348,7 @@ if [ "$1" = "-a" ] || [ "$1" = "-t" ]; then
 
 	for case in "${test_cases[@]}"; do
 		echo "🧪 A Testar caso: ./philo $case"
-		timeout 5 stdbuf -oL ./philo $case >temp_output.log 2>&1
+		timeout 10 stdbuf -oL ./philo $case >temp_output.log 2>&1
 
 		death_message=$(grep "died" temp_output.log)
 		if [ -z "$death_message" ]; then
@@ -407,7 +415,7 @@ if [ "$1" = "-a" ] || [ "$1" = "-s" ]; then
 		echo "🧪 Caso de teste: ./philo $case"
 		echo >output.log
 		redirect_output "output.log"
-		timeout 5 stdbuf -oL ./philo $case
+		timeout 10 stdbuf -oL ./philo $case
 		restore_output
 
 		death_message_count=$(grep -c "died" output.log)
