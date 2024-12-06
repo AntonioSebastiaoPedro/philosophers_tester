@@ -6,7 +6,7 @@
 #    By: ansebast <ansebast@student.42luanda.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/01 13:23:47 by ansebast          #+#    #+#              #
-#    Updated: 2024/12/06 08:55:07 by ansebast         ###   ########.fr        #
+#    Updated: 2024/12/06 08:56:59 by ansebast         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -244,5 +244,59 @@ if [ "$1" = "-a" ] || [ "$1" = "-l" ]; then
 		fi
 	done
 	rm -f leaks.log
+	echo -e "\n"
+fi
+
+#===================Testes de cenários onde nenhum filósofo deve morrer
+if [ "$1" = "-a" ] || [ "$1" = "-c" ]; then
+	echo -e "$BOLT$C=====================================================$RESET"
+	echo "🔍 A Testar cenários onde nenhum filósofo deve morrer..."
+	echo -e "$BOLT$C=====================================================$RESET\n"
+
+	test_cases=(
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"2 410 200 200"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-300 -n 1)"
+		"$(shuf -i 2-50 -n 1) $(shuf -i 1000-2000 -n 1) $(shuf -i 100-300 -n 1) $(shuf -i 100-200 -n 1)"
+		"5 800 200 200"
+		"137 1000 200 200"
+		"78 1000 200 200"
+		"4 410 200 200"
+		"4 700 300 300"
+		"3 1800 400 400"
+		"2 1010 500 500"
+		"11 367 77 91"
+		"27 733 112 235"
+		"4 1000 313 412"
+		"3 1000 100 100"
+	)
+
+	for case in "${test_cases[@]}"; do
+		echo "🧪 Caso de teste: ./philo $case"
+		echo >output.log
+		redirect_output "output.log"
+		timeout "$2" stdbuf -oL ./philo $case
+		restore_output
+
+		death_message=$(grep "died" output.log)
+
+		echo "Resultado:"
+		if [ -n "$death_message" ]; then
+			echo "❌ Um Filósofo morreu 😭"
+			echo -e "📜 Log de morte: $death_message ☠️\n"
+		else
+			echo -e "✅ Nenhum Filósofo morreu 😇\n"
+		fi
+	done
 	echo -e "\n"
 fi
