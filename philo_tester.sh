@@ -6,7 +6,7 @@
 #    By: ansebast <ansebast@student.42luanda.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/01 13:23:47 by ansebast          #+#    #+#              #
-#    Updated: 2024/12/06 08:48:18 by ansebast         ###   ########.fr        #
+#    Updated: 2024/12/06 08:51:17 by ansebast         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -102,3 +102,86 @@ if [ ! -f "./philo" ]; then
 fi
 
 trap cleanup SIGINT
+
+##===================Teste de cenários para Data Races
+if [ "$1" = "-a" ] || [ "$1" = "-d" ]; then
+	test_cases=(
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) 1"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) 1"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) 1"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1)"
+		"$(shuf -i 1-179 -n 1) $(shuf -i 400-800 -n 1) $(shuf -i 60-800 -n 1) $(shuf -i 60-800 -n 1) 1"
+		"5 60 200 200 1000"
+		"77 800 600 200 1000"
+		"91 777 523 257"
+		"3 600 300 300 1000"
+		"47 800 400 400 1000"
+		"2 100 100 100 1000"
+		"1 800 100 100 1000"
+		"2 310 2000 100 1000"
+		"3 400 2000 150"
+		"4 300 3000 150 1000"
+		"5 500 2000 300 1000"
+		"10 200 200 200"
+		"100 120 65 65"
+		"179 800 400 400"
+		"5 1000 1000 1000 100"
+		"4 310 200 200"
+		"5 410 200 200"
+		"3 600 300 300"
+		"7 401 200 200"
+	)
+	echo -e "$BOLT$C==========================================================$RESET"
+	echo -e "🔍 A Testar cenários para Deadlocks..."
+	echo -e "$BOLT$C==========================================================$RESET\n"
+	for case in "${test_cases[@]}"; do
+		echo "🧪 Caso de teste: ./philo $case"
+		redirect_output "output.log"
+		timeout 5 stdbuf -oL ./philo $case
+		restore_output
+		if [ $? -eq 124 ]; then
+			echo -e "❌ Deadlock detectado (programa travou ou demorou demais).\n"
+		else
+			echo -e "✅ Sem deadlock detectado.\n"
+		fi
+	done
+	echo -e "\n"
+
+	echo -e "$BOLT$C==========================================================$RESET"
+	echo -e "🔍 A Testar cenários para Data Races com Helgrind..."
+	echo -e "$BOLT$C==========================================================$RESET\n"
+
+	for case in "${test_cases[@]}"; do
+		echo "🧪 Caso de teste: ./philo $case"
+		redirect_output "valgrind.log"
+		valgrind --tool=helgrind ./philo $case
+		restore_output
+		if grep -q "data race" valgrind.log; then
+			echo -e "❌ Possível Data Race detectado!\n"
+		else
+			echo -e "✅ Sem Data Races detectados.\n"
+		fi
+	done
+	echo -e "\n"
+
+	echo -e "$BOLT$C=====================================================$RESET"
+	echo -e "🔍 A Testar cenários para Data Races com DRD..."
+	echo -e "$BOLT$C=====================================================$RESET\n"
+	for case in "${test_cases[@]}"; do
+		echo "🧪 caso: ./philo $case"
+
+		redirect_output "drd.log"
+		valgrind --tool=drd --check-stack-var=yes ./philo $case
+		restore_output
+		if grep -q "Conflicting" drd.log; then
+			echo "❌ Data Race detectado!"
+		else
+			echo "✅ Sem Data Races detectados."
+		fi
+		echo -e "\n"
+	done
+	rm -f output.log valgrind.log drd.log
+	echo -e "\n"
+fi
