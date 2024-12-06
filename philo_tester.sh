@@ -1,73 +1,104 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    philo_tester.sh                                    :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: ansebast <ansebast@student.42luanda.com    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2024/12/01 13:23:47 by ansebast          #+#    #+#              #
+#    Updated: 2024/12/06 08:48:18 by ansebast         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 #!/bin/bash
-if [ -f "output.log" ]; then
-	rm output.log
+BLACK="\e[30m"
+R="\e[31m"
+G="\e[32m"
+Y="\e[33m"
+B="\e[34m"
+M="\e[35m"
+C="\e[36m"
+W="\e[37m"
+RESET="\e[0m"
+BOLT="\e[1m"
+
+usage() {
+	echo -e "$BOLT$C=========================================$RESET"
+	echo -e "$BOLT$Y Lista de opcões do programa:$RESET"
+	echo -e "$BOLT$C=========================================$RESET\n"
+
+	echo -e "$BOLT$G  -d:$RESET$W Verifica$R data races$RESET e$R deadlocks$RESET"
+	echo -e "$BOLT$G  -l:$RESET$W Verifica$R vazamentos de memória$RESET"
+	echo -e "$BOLT$G  -s:$RESET$W Verifica cenários onde$R um filósofo deve morrer$RESET"
+	echo -e "$BOLT$G  -c tempo:$RESET$W Verifica cenários onde$G nenhum filósofo deve morrer$RESET"
+	echo -e "$BOLT$G  -t:$RESET$W Verifica$B o tempo de emissão da mensagem de morte$RESET"
+	echo -e "$BOLT$G  -a tempo:$RESET$W Executa todos os tipos de testes$RESET\n"
+
+	echo -e "$BOLT$C=========================================$RESET"
+	echo -e "$BOLT Exemplo: ./philo_tester.sh -c 60"
+	echo -e "$BOLT$C=========================================$RESET"
+
+	exit 127
+}
+
+redirect_output() {
+	local log_file="$1"
+	exec 3>&1
+	exec 4>&2
+	exec 1>>"$log_file"
+	exec 2>>"$log_file"
+}
+
+restore_output() {
+	exec 1>&3 3>&-
+	exec 2>&4 4>&-
+}
+
+progress_bar() {
+	total=$1
+	current=$2
+	width=50
+	progress=$(((current * width) / total))
+	remaining=$((width - progress))
+
+	printf "\r["
+	for i in $(seq 0 $(($progress - 1))); do
+		printf "$G#$RESET"
+	done
+	for i in $(seq 0 $(($remaining - 1))); do
+		printf "$R-$RESET"
+	done
+	printf "] %d%%" $(((current * 100) / total))
+}
+
+run_progress_bar() {
+	total=100
+	for i in $(seq 1 $total); do
+		progress_bar $total $i
+	done
+	rm -f leaks.log output.log valgrind.log drd.log temp_output.log
+}
+
+cleanup() {
+	restore_output
+	echo -e "\n\n$R A encerrar execução do$BOLT$W Philosophers Tester$RESET$R. e Limpar recursos...$RESET"
+	run_progress_bar
+	echo -e "\n"
+	exit 124
+}
+
+if [ "$#" -eq 0 ] || { [ "$1" != "-a" ] && [ "$1" != "-l" ] && [ "$1" != "-d" ] && [ "$1" != "-s" ] && [ "$1" != "-c" ] && [ "$1" != "-t" ]; }; then
+	usage
+elif { [ "$1" == "-a" ] || [ "$1" == "-c" ]; } && { [ "$#" != 2 ] || [ $(echo "$2" | grep -qE '^-?[0-9]+$') ]; }; then
+	echo -e "$BOLT$C=========================================$RESET"
+	echo -e "$BOLT Exemplo: ./philo_tester.sh $1 60"
+	echo -e "$BOLT$C=========================================$RESET"
+	exit 127
 fi
 
 if [ ! -f "./philo" ]; then
-	echo "🚨 Executável 'philo' não encontrado!"
+	echo -e "🚨 $RED Executável $BOLT'philo'$RESTE$RED não encontrado!"
 	exit 1
 fi
 
-#===================Testes de vazamento de memória
-echo "🔍 Iniciando testes de vazamento de memória para Philosophers..."
-test_cases=(
-	"2 800 200 200"
-	"1 800 200 200"
-	"200 800 200 200"
-	"5 5000 1000 1000"
-	"5 200 100 100"
-	"5 800 200 200 10"
-	"5 810 200 200 9223372036854775809"
-	"1 -92233720368547758099 200 200 10"
-	"5 1 1 1"
-	"-1 800 200 200"
-	"0 800 200 200"
-	"200 800 200 200"
-)
-
-for case in "${test_cases[@]}"; do
-	echo "🧪 Testando caso: ./philo $case"
-	timeout 60 valgrind --leak-check=full ./philo $case >leaks.log 2>&1
-	leaks_count=$(grep -c "lost" leaks.log)
-	if [ $leaks_count -ne 0 ]; then
-		echo "❌ Vazamento de memória detectado!"
-	else
-		echo "✅ Sem vazamentos de memória!"
-	fi
-	echo ""
-done
-
-##===================Testes de cenários onde um filósofo deve morrer
-echo "🔍 Testando cenários onde um filósofo deve morrer..."
-test_cases=(
-	"2 310 200 100"
-	"3 400 200 150"
-	"4 300 150 150"
-	"5 500 200 300"
-)
-
-for case in "${test_cases[@]}"; do
-	echo "🧪 Testando caso: ./philo $case"
-	./philo $case >output.log
-
-	death_message_count=$(grep -c "died" output.log)
-	post_death_messages=$(grep -A1 "died" output.log | tail -n +2)
-
-	echo "Resultado:"
-	if [ "$death_message_count" -eq 1 ]; then
-		echo "✅ Apenas uma mensagem de morte encontrada."
-	else
-		echo "❌ Número incorreto de mensagens de morte ($death_message_count encontradas)."
-	fi
-
-	if [ -z "$post_death_messages" ]; then
-		echo "✅ Nenhuma mensagem após a morte."
-	else
-		echo "❌ Mensagens encontradas após a morte:"
-		echo "$post_death_messages"
-	fi
-	echo ""
-done
-echo ""
-
-echo "✔️ Testes concluídos!"
+trap cleanup SIGINT
