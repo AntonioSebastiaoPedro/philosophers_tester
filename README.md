@@ -82,7 +82,7 @@ Contributions to improve this script are welcome! Please submit **pull requests*
 
 ---
 
-**Author:** Antonio Sebastião Pedro <br>
+**Author:** António Sebastião Pedro <br>
 **42 Username:** ansebast <br>
 **Email:** antoniosebastiaopedro19@outlook.com
 
