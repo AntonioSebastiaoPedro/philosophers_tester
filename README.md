@@ -41,7 +41,7 @@ bash philo_tester.sh [option] [parameters]
 | `-s`           | Validates scenarios where **a philosopher must die**.                                        |
 | `-c time`      | Tests scenarios where **no philosopher should die**, accepting the maximum execution time as a parameter. |
 | `-t`           | Checks the **death message timing**.                                                         |
-| `-a`           | Runs **all available tests**.                                                                |
+| `-a time`           | Runs **all available tests**.                                                                |
 
 ### Usage Examples
 
