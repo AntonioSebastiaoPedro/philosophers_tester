@@ -14,6 +14,7 @@ O script permite executar todos os testes de uma vez ou apenas testes específic
 - **Cenários onde nenhum filósofo deve morrer**: Valida o correto comportamento do programa nestes cenários.
 - **Cenários onde um filósofo deve morrer**: Verifica se o programa identifica e reporta corretamente a morte de um filósofo.
 - **Validação do tempo de emissão das mensagens de morte**: Garante que as mensagens sejam exibidas no tempo correto (10ms no máximo depois da morte do philósofo).
+- **Validação do número de refeições**: Verifica se todos os filósofos comem pelo menos o número mínimo de vezes especificado.
 
 ## Pré-requisitos
 
@@ -41,6 +42,7 @@ bash philo_tester.sh [opção] [parâmetros]
 | `-s`           | Valida cenários onde **um filósofo deve morrer**.                                        		     |
 | `-c tempo`     | Testa cenários onde **nenhum filósofo deve morrer**, aceitando como parâmetro o tempo máximo de execução. |
 | `-t`           | Verifica o **tempo de emissão da mensagem de morte**.                                    		     |
+| `-e`           | Valida se **todos os filósofos comem o número mínimo de vezes**.                        		     |
 | `-a`           | Executa **todos os testes disponíveis**.                                                		     |
 
 ### Exemplos de Uso
@@ -63,6 +65,11 @@ bash philo_tester.sh [opção] [parâmetros]
 4. Verificar vazamentos de memória:
    ```bash
    bash philo_tester.sh -l
+   ```
+
+5. Validar número de refeições (todos os filósofos comem o mínimo necessário):
+   ```bash
+   bash philo_tester.sh -e
    ```
 
 ## Resultados e Logs

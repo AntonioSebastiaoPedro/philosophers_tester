@@ -40,6 +40,7 @@ usage() {
 	echo -e "$BOLT$G  -s:$RESET$W Verifica cenários onde$R um filósofo deve morrer$RESET"
 	echo -e "$BOLT$G  -c tempo:$RESET$W Verifica cenários onde$G nenhum filósofo deve morrer$RESET"
 	echo -e "$BOLT$G  -t:$RESET$W Verifica$B o tempo de emissão da mensagem de morte$RESET"
+	echo -e "$BOLT$G  -e:$RESET$W Verifica se$M todos os filósofos comem o número mínimo de vezes$RESET"
 	echo -e "$BOLT$G  -a tempo:$RESET$W Executa todos os tipos de testes$RESET\n"
 
 	echo -e "$BOLT$C=========================================$RESET"
@@ -84,18 +85,19 @@ run_progress_bar() {
 	for i in $(seq 1 $total); do
 		progress_bar $total $i
 	done
-	rm -f leaks.log output.log valgrind.log drd.log temp_output.log
+	rm -f leaks.log output.log valgrind.log drd.log temp_output.log eating_test_*.log
 }
 
 cleanup() {
 	restore_output
 	echo -e "\n\n$R A encerrar execução do$BOLT$W Philosophers Tester$RESET$R. e Limpar recursos...$RESET"
+	rm -f eating_test_*.log
 	run_progress_bar
 	echo -e "\n"
 	exit 124
 }
 
-if [ "$#" -eq 0 ] || { [ "$1" != "-a" ] && [ "$1" != "-l" ] && [ "$1" != "-d" ] && [ "$1" != "-s" ] && [ "$1" != "-c" ] && [ "$1" != "-t" ]; }; then
+if [ "$#" -eq 0 ] || { [ "$1" != "-a" ] && [ "$1" != "-l" ] && [ "$1" != "-d" ] && [ "$1" != "-s" ] && [ "$1" != "-c" ] && [ "$1" != "-t" ] && [ "$1" != "-e" ]; }; then
 	usage
 elif { [ "$1" == "-a" ] || [ "$1" == "-c" ]; } && { [ "$#" != 2 ] || [ $(echo "$2" | grep -qE '^-?[0-9]+$') ]; }; then
 	echo -e "$BOLT$C=========================================$RESET"
@@ -452,6 +454,80 @@ if [ "$1" = "-a" ] || [ "$1" = "-s" ]; then
 		fi
 	done
 	rm -f output.log
+	echo -e "\n"
+fi
+
+##===================Testes de validação do número de vezes que cada filósofo come
+if [ "$1" = "-a" ] || [ "$1" = "-e" ]; then
+	echo -e "$BOLT$C=====================================================$RESET"
+	echo -e "🍽️ A Verificar se todos os filósofos comem o número mínimo de vezes..."
+	echo -e "$BOLT$C=====================================================$RESET\n"
+
+	test_cases=(
+		"3 1000 200 200 5"
+		"4 800 150 150 7"
+		"2 1200 300 300 10"
+		"2 800 200 200 3"
+		"6 1000 250 250 4"
+		"7 1500 200 200 6"
+		"3 2000 400 400 15"
+		"4 1000 200 200 8"
+		"5 800 150 150 5"
+		"2 1500 300 300 10"
+		"8 1200 200 200 3"
+		"4 1000 250 250 12"
+		"4 2000 500 500 20"
+		"5 900 180 180 6"
+		"6 1100 220 220 4"
+	)
+
+	for case in "${test_cases[@]}"; do
+		echo "🧪 Caso de teste: ./philo $case"
+		
+		# Extrair parâmetros do caso de teste
+		num_philos=$(echo $case | awk '{print $1}')
+		must_eat=$(echo $case | awk '{print $5}')
+		
+		if [ -z "$must_eat" ]; then
+			echo "⚠️ Caso sem número de refeições especificado, a saltar..."
+			continue
+		fi
+		
+		# Criar nome único para o arquivo de log
+		timestamp=$(date +%s%N)
+		log_file="eating_test_${timestamp}.log"
+		
+		echo >$log_file
+		redirect_output "$log_file"
+		timeout 30 stdbuf -oL ./philo $case
+		restore_output
+		
+		echo "📊 A analisar refeições de cada filósofo..."
+		
+		all_philosophers_ok=true
+		
+		# Verificar cada filósofo individualmente
+		for philo_id in $(seq 1 $num_philos); do
+			eating_count=$(grep -c "$philo_id is eating" $log_file)
+			echo "   Filósofo $philo_id: $eating_count refeições (mínimo: $must_eat)"
+			
+			if [ $eating_count -lt $must_eat ]; then
+				echo "   ❌ Filósofo $philo_id não comeu o suficiente!"
+				all_philosophers_ok=false
+			fi
+		done
+		
+		if [ "$all_philosophers_ok" = true ]; then
+			echo -e "✅ Todos os filósofos comeram pelo menos $must_eat vezes!\n"
+			test_passed=$(( $test_passed + 1 ))
+		else
+			echo -e "❌ Nem todos os filósofos comeram o número mínimo de vezes!\n"
+			test_failure=$(( $test_failure + 1 ))
+		fi
+		
+		# Limpar arquivo de log específico
+		rm -f $log_file
+	done
 	echo -e "\n"
 fi
 

@@ -14,6 +14,7 @@ The script allows users to run all tests at once or focus on specific tests as n
 - **Scenarios Where No Philosopher Should Die**: Validates proper behavior in safe scenarios.
 - **Scenarios Where a Philosopher Must Die**: Checks if the program correctly identifies and reports a philosopher's death.
 - **Death Message Timing Validation**: Ensures that messages are displayed within the correct timeframe (up to 10ms after the philosopher's death).
+- **Eating Count Validation**: Verifies that all philosophers eat at least the minimum required number of times when specified.
 
 ## Prerequisites
 
@@ -41,6 +42,7 @@ bash philo_tester.sh [option] [parameters]
 | `-s`           | Validates scenarios where **a philosopher must die**.                                        |
 | `-c time`      | Tests scenarios where **no philosopher should die**, accepting the maximum execution time as a parameter. |
 | `-t`           | Checks the **death message timing**.                                                         |
+| `-e`           | Validates that **all philosophers eat the minimum required number of times**.                |
 | `-a time`           | Runs **all available tests**.                                                                |
 
 ### Usage Examples
@@ -63,6 +65,11 @@ bash philo_tester.sh [option] [parameters]
 4. Check for memory leaks:
    ```bash
    bash philo_tester.sh -l
+   ```
+
+5. Validate eating count (all philosophers eat minimum required times):
+   ```bash
+   bash philo_tester.sh -e
    ```
 
 ## Results and Logs
